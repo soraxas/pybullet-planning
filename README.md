@@ -1,3 +1,5 @@
+This is a fork of the [upstream](https://github.com/caelan/pybullet-planning) with modification that made it works with pypi.
+
 # pybullet-planning (previously ss-pybullet)
 
 A repository of [PyBullet](https://pypi.python.org/pypi/pybullet) utility functions for robotic motion planning, manipulation planning, and task and motion planning (TAMP).
