@@ -36,7 +36,7 @@ def get_parent_dir(file): # __file__
 sys.path.extend([
     join_paths(get_parent_dir(__file__), os.pardir, 'motion'),
 ])
-from motion_planners.meta import solve
+from .motion_planners.meta import solve
 
 # from future_builtins import map, filter
 # from builtins import input # TODO - use future
@@ -1778,7 +1778,7 @@ def wrap_angle(theta, **kwargs):
 
 def circular_difference(theta2, theta1, **kwargs):
     interval = circular_interval(**kwargs)
-    #extent = get_interval_extent(interval) # TODO: combine with motion_planners
+    #extent = get_interval_extent(interval) # TODO: combine with .motion_planners
     extent = get_aabb_extent(interval)
     diff_interval = Interval(-extent/2, +extent/2)
     difference = wrap_interval(theta2 - theta1, interval=diff_interval)
@@ -4006,7 +4006,7 @@ def plan_joint_motion(body, joints, end_conf, obstacles=[], attachments=[],
         return None
 
     if algorithm is None:
-        from motion_planners.rrt_connect import birrt
+        from .motion_planners.rrt_connect import birrt
         return birrt(start_conf, end_conf, distance_fn, sample_fn, extend_fn, collision_fn, **kwargs)
     return solve(start_conf, end_conf, distance_fn, sample_fn, extend_fn, collision_fn,
                  algorithm=algorithm, weights=weights, **kwargs)
@@ -4016,7 +4016,7 @@ plan_holonomic_motion = plan_joint_motion
 
 def plan_lazy_prm(start_conf, end_conf, sample_fn, extend_fn, collision_fn, **kwargs):
     # TODO: cost metric based on total robot movement (encouraging greater distances possibly)
-    from motion_planners.lazy_prm import lazy_prm
+    from .motion_planners.lazy_prm import lazy_prm
     path, samples, edges, colliding_vertices, colliding_edges = lazy_prm(
         start_conf, end_conf, sample_fn, extend_fn, collision_fn, num_samples=200, **kwargs)
     if path is None:
@@ -4110,7 +4110,7 @@ def get_differential_extend_fn(body, joints, resolutions=None, **kwargs):
     # https://github.com/AtsushiSakai/PythonRobotics/tree/master/PathPlanning/CubicSpline
     assert len(joints) == 3
     from scipy.interpolate import CubicHermiteSpline
-    from motion_planners.trajectory.retime import Curve
+    from .motion_planners.trajectory.retime import Curve
     resolutions = get_default_resolutions(body, joints, resolutions)
     angular_extend_fn = get_extend_fn(body, joints[2:], resolutions[2:])
     dx = resolutions[0] # TODO: need to account for the y resolution (grid?)
@@ -4205,7 +4205,7 @@ def plan_nonholonomic_motion(body, joints, end_conf, obstacles=[], attachments=[
         return None
 
     if algorithm is None:
-        from motion_planners.rrt_connect import birrt
+        from .motion_planners.rrt_connect import birrt
         return birrt(start_conf, end_conf, distance_fn, sample_fn, extend_fn, collision_fn, **kwargs)
     path = solve(start_conf, end_conf, distance_fn, sample_fn, extend_fn, collision_fn,
                  algorithm=algorithm, **kwargs) # weights=weights, # TODO: deliberately excluding for PRM unless circular
@@ -4250,7 +4250,7 @@ def get_dynamical_limits(robot, joints, max_velocities=None, max_accelerations=N
     return max_velocities, max_accelerations
 
 def get_acceleration_fn(robot, joints, max_velocities=None, max_accelerations=None, duration_to_max=1., **kwargs):
-    from motion_planners.primitives import get_duration_fn
+    from .motion_planners.primitives import get_duration_fn
     max_velocities, max_accelerations = get_dynamical_limits(
         robot, joints, max_velocities, max_accelerations, duration_to_max=1.)
     return get_duration_fn(get_difference_fn(robot, joints), v_max=max_velocities, a_max=max_accelerations, **kwargs)
@@ -4258,7 +4258,7 @@ def get_acceleration_fn(robot, joints, max_velocities=None, max_accelerations=No
 def retime_path(robot, joints, path, **kwargs):
     if path is None:
         return None
-    from motion_planners.trajectory.linear import solve_multi_linear
+    from .motion_planners.trajectory.linear import solve_multi_linear
     path = adjust_path(robot, joints, path) # TODO: adjust to the current configuration
     #waypoints = waypoints_from_path(path)
     max_velocities, max_accelerations = get_dynamical_limits(robot, joints, **kwargs)
@@ -4272,7 +4272,7 @@ def smooth_path(robot, joints, path, obstacles=[], attachments=[],
                 max_velocities=None, max_accelerations=None, duration_to_max=1., **kwargs):
     if path is None:
         return None
-    from motion_planners.trajectory.smooth import smooth_cubic
+    from .motion_planners.trajectory.smooth import smooth_cubic
     path = adjust_path(robot, joints, path) # TODO: adjust to the current configuration
     if resolutions is None:
         resolutions = get_default_resolutions(robot, joints)
@@ -4285,7 +4285,7 @@ def smooth_path(robot, joints, path, obstacles=[], attachments=[],
 def discretize_curve(body, joints, curve, resolutions=None, **kwargs):
     if curve is None:
         return None
-    from motion_planners.trajectory.discretize import time_discretize_curve, sample_discretize_curve
+    from .motion_planners.trajectory.discretize import time_discretize_curve, sample_discretize_curve
     if resolutions is None:
         resolutions = get_default_resolutions(body, joints)
     #_, path = time_discretize_curve(curve, verbose=False, resolution=resolutions) # max_velocities=v_max,
@@ -4341,10 +4341,10 @@ def plan_base_motion(body, end_conf, base_limits, obstacles=[], direct=False,
         return None
 
     if direct:
-        from motion_planners.meta import direct_path
+        from .motion_planners.meta import direct_path
         return direct_path(start_conf, end_conf, extend_fn, collision_fn)
     if algorithm is None:
-        from motion_planners.rrt_connect import birrt
+        from .motion_planners.rrt_connect import birrt
         return birrt(start_conf, end_conf, distance_fn, sample_fn, extend_fn, collision_fn, **kwargs)
     return solve(start_conf, end_conf, distance_fn, sample_fn, extend_fn, collision_fn, algorithm=algorithm, **kwargs)
 
